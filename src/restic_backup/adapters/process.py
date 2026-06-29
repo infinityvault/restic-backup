@@ -9,6 +9,16 @@ from typing import IO
 logger = logging.getLogger(__name__)
 
 
+class ProcessCommandError(subprocess.CalledProcessError):
+    def __str__(self) -> str:
+        lines = [super().__str__()]
+        if self.output:
+            lines.extend(["stdout:", str(self.output).strip()])
+        if self.stderr:
+            lines.extend(["stderr:", str(self.stderr).strip()])
+        return "\n".join(lines)
+
+
 class ProcessRunner:
     def run(self, args: list[str], env: dict[str, str] | None = None) -> None:
         self._run(args, env=env)
@@ -53,10 +63,20 @@ class ProcessRunner:
         if completed.stderr:
             logger.debug("Command stderr", extra={"stderr": completed.stderr.strip()})
         if completed.returncode != 0:
-            raise subprocess.CalledProcessError(
+            output = completed.stdout if isinstance(completed.stdout, str) else None
+            logger.error(
+                "Command failed",
+                extra={
+                    "command": log_args,
+                    "returncode": completed.returncode,
+                    "stdout": output.strip() if output else None,
+                    "stderr": completed.stderr.strip() if completed.stderr else None,
+                },
+            )
+            raise ProcessCommandError(
                 completed.returncode,
                 log_args,
-                output=completed.stdout,
+                output=output,
                 stderr=completed.stderr,
             )
         return completed

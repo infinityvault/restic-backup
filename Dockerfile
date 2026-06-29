@@ -21,3 +21,5 @@ COPY src ./src
 RUN --mount=from=ghcr.io/astral-sh/uv:0.11.25,source=/uv,target=/bin/uv \
     UV_PROJECT_ENVIRONMENT="/usr/local/" \
     uv sync --locked --no-dev --no-editable --compile-bytecode
+
+ENTRYPOINT ["restic-backup"]
