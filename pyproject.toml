@@ -1,0 +1,33 @@
+[project]
+name = "restic-backup"
+version = "0.1.0"
+description = "Ports-and-adapters CLI for restic backups, restores, and cleanup."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.1.7",
+    "pyyaml>=6.0.2",
+    "requests>=2.32.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.3",
+]
+
+[project.scripts]
+restic-backup = "restic_backup.cli:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "integration: compose-backed tests that require Docker",
+]

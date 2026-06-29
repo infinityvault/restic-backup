@@ -1,0 +1,16 @@
+data_dir: /data
+db_dump_file: database/dump.sql
+
+database:
+  type: postgres
+  host: postgres
+  port: 5432
+  username: app
+  password: secret
+  database: app
+
+notifications:
+  mode: on_failure
+  telegram:
+    bot_token: "123456:token"
+    chat_id: "123456789"
