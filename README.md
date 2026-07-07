@@ -33,3 +33,21 @@ RESTIC_BACKUP_RUN_INTEGRATION=1 uv run --extra dev pytest tests/integration
 ## Configuration
 
 See [config.example.yaml](config.example.yaml).
+
+Configuration can also be provided with environment variables. Environment values override YAML values, and the
+config file may be omitted when everything is supplied through the environment.
+
+Supported variables:
+
+- `RESTIC_BACKUP_DATA_DIR`
+- `RESTIC_BACKUP_DB_DUMP_FILE`
+- `RESTIC_BACKUP_DATABASE_TYPE`
+- `RESTIC_BACKUP_DATABASE_HOST`
+- `RESTIC_BACKUP_DATABASE_PORT`
+- `RESTIC_BACKUP_DATABASE_USERNAME`
+- `RESTIC_BACKUP_DATABASE_PASSWORD`
+- `RESTIC_BACKUP_DATABASE_NAME`
+- `RESTIC_BACKUP_DATABASE_EXTRA_ARGS`
+- `RESTIC_BACKUP_NOTIFICATIONS_MODE`
+- `RESTIC_BACKUP_TELEGRAM_BOT_TOKEN`
+- `RESTIC_BACKUP_TELEGRAM_CHAT_ID`
