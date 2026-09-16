@@ -35,38 +35,19 @@ class RestoreUseCase:
         self._database = database
 
     def execute(self, data_dir: Path, db_dump_path: Path, before: str | None = None) -> None:
-        needs_data_restore = self._filesystem.is_empty_dir(data_dir)
-        needs_db_restore = self._database is not None and self._database.is_empty()
-
-        # A brand new deploy has an empty data dir/database but no restic
-        # snapshot to restore from yet - that's not a failure, there is
-        # simply nothing to restore.
-        has_snapshots = (
-            self._restic.has_snapshots() if (needs_data_restore or needs_db_restore) else False
-        )
-
-        if needs_data_restore:
-            if has_snapshots:
-                logger.info("Restoring data from restic", extra={"target": str(data_dir), "before": before})
-                data_dir.mkdir(parents=True, exist_ok=True)
-                self._restic.restore(data_dir, before=before)
-            else:
-                logger.info(
-                    "Skipping restic restore because no snapshots exist yet",
-                    extra={"target": str(data_dir)},
-                )
+        if self._filesystem.is_empty_dir(data_dir):
+            logger.info("Restoring data from restic", extra={"target": str(data_dir), "before": before})
+            data_dir.mkdir(parents=True, exist_ok=True)
+            self._restic.restore(data_dir, before=before)
         else:
             logger.info("Skipping restic restore because data directory is not empty", extra={"target": str(data_dir)})
 
-        if self._database is None:
+        if not self._database:
             return
 
-        if needs_db_restore:
-            if has_snapshots:
-                logger.info("Restoring database dump", extra={"source": str(db_dump_path)})
-                self._database.restore(db_dump_path)
-            else:
-                logger.info("Skipping database restore because no snapshots exist yet")
+        if self._database.is_empty():
+            logger.info("Restoring database dump", extra={"source": str(db_dump_path)})
+            self._database.restore(db_dump_path)
         else:
             logger.info("Skipping database restore because database is not empty")
 

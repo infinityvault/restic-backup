@@ -29,13 +29,6 @@ class ResticPort(Protocol):
     def restore(self, target: Path, before: str | None = None) -> None:
         """Restore the latest snapshot, optionally before a point in time."""
 
-    def has_snapshots(self) -> bool:
-        """Return whether the repository has at least one snapshot.
-
-        Also covers a repository that has never been initialized - both
-        cases mean the same thing to a caller: there is nothing to restore.
-        """
-
     def forget(self, retention_args: list[str]) -> None:
         """Run restic forget with retention args."""
 
