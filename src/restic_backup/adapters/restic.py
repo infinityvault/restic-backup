@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from restic_backup.adapters.process import ProcessCommandError, ProcessRunner
@@ -27,6 +28,12 @@ class ResticCliAdapter:
     def prune(self) -> None:
         self._ensure_initialized()
         self._runner.run(["restic", "prune"])
+
+    def has_snapshots(self) -> bool:
+        self._ensure_initialized()
+        output = self._runner.run_capture(["restic", "snapshots", "--json"])
+        snapshots = json.loads(output) if output.strip() else []
+        return len(snapshots) > 0
 
     def _ensure_initialized(self) -> None:
         # `restic cat config` fails whenever the repository hasn't been

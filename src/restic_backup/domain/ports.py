@@ -35,6 +35,9 @@ class ResticPort(Protocol):
     def prune(self) -> None:
         """Run restic prune."""
 
+    def has_snapshots(self) -> bool:
+        """Return whether the repository has at least one snapshot."""
+
 
 class FileSystemPort(Protocol):
     def is_empty_dir(self, path: Path) -> bool:

@@ -35,12 +35,14 @@ class RestoreUseCase:
         self._database = database
 
     def execute(self, data_dir: Path, db_dump_path: Path, before: str | None = None) -> None:
-        if self._filesystem.is_empty_dir(data_dir):
+        if not self._filesystem.is_empty_dir(data_dir):
+            logger.info("Skipping restic restore because data directory is not empty", extra={"target": str(data_dir)})
+        elif not self._restic.has_snapshots():
+            logger.info("Skipping restic restore because no snapshots exist yet", extra={"target": str(data_dir)})
+        else:
             logger.info("Restoring data from restic", extra={"target": str(data_dir), "before": before})
             data_dir.mkdir(parents=True, exist_ok=True)
             self._restic.restore(data_dir, before=before)
-        else:
-            logger.info("Skipping restic restore because data directory is not empty", extra={"target": str(data_dir)})
 
         if not self._database:
             return
