@@ -10,3 +10,6 @@ class LocalFileSystemAdapter:
         if not path.is_dir():
             raise NotADirectoryError(path)
         return next(path.iterdir(), None) is None
+
+    def file_exists(self, path: Path) -> bool:
+        return path.is_file()

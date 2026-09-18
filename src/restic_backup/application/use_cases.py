@@ -47,7 +47,9 @@ class RestoreUseCase:
         if not self._database:
             return
 
-        if self._database.is_empty():
+        if not self._filesystem.file_exists(db_dump_path):
+            logger.info("Skipping database restore because no dump file is present", extra={"source": str(db_dump_path)})
+        elif self._database.is_empty():
             logger.info("Restoring database dump", extra={"source": str(db_dump_path)})
             self._database.restore(db_dump_path)
         else:

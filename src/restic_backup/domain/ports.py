@@ -43,6 +43,9 @@ class FileSystemPort(Protocol):
     def is_empty_dir(self, path: Path) -> bool:
         """Return whether path is missing or contains no entries."""
 
+    def file_exists(self, path: Path) -> bool:
+        """Return whether path exists and is a regular file."""
+
 
 class NotifierPort(Protocol):
     def notify(self, title: str, message: str, success: bool) -> None:

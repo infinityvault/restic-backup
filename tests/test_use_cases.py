@@ -44,11 +44,15 @@ class DatabaseSpy:
 
 
 class FilesystemStub:
-    def __init__(self, empty: bool) -> None:
+    def __init__(self, empty: bool, dump_exists: bool = True) -> None:
         self.empty = empty
+        self.dump_exists = dump_exists
 
     def is_empty_dir(self, path: Path) -> bool:
         return self.empty
+
+    def file_exists(self, path: Path) -> bool:
+        return self.dump_exists
 
 
 def test_backup_dumps_database_before_restic_backup(tmp_path: Path) -> None:
@@ -79,7 +83,7 @@ def test_restore_restores_data_then_database_when_both_are_empty(tmp_path: Path)
     assert database.calls == [("is_empty", None), ("restore", dump_path)]
 
 
-def test_restore_skips_restic_but_still_restores_database_when_no_snapshots_exist(
+def test_restore_skips_restic_and_database_when_no_snapshots_exist(
     tmp_path: Path,
 ) -> None:
     restic = ResticSpy(has_snapshots=False)
@@ -87,11 +91,30 @@ def test_restore_skips_restic_but_still_restores_database_when_no_snapshots_exis
     data_dir = tmp_path / "data"
     dump_path = data_dir / "db_dump.sql"
 
-    RestoreUseCase(restic, FilesystemStub(empty=True), database).execute(data_dir, dump_path)
+    RestoreUseCase(restic, FilesystemStub(empty=True, dump_exists=False), database).execute(
+        data_dir, dump_path
+    )
 
     assert restic.calls == [("has_snapshots", None)]
     assert not data_dir.exists()
-    assert database.calls == [("is_empty", None), ("restore", dump_path)]
+    # No restic snapshot means the dump file (which lives inside data_dir)
+    # was never restored either, so the database restore is skipped too -
+    # without even checking is_empty(), since there's nothing to restore.
+    assert database.calls == []
+
+
+def test_restore_skips_database_restore_when_no_dump_file_is_present(tmp_path: Path) -> None:
+    restic = ResticSpy(has_snapshots=True)
+    database = DatabaseSpy(empty=True)
+    data_dir = tmp_path / "data"
+    dump_path = data_dir / "db_dump.sql"
+
+    RestoreUseCase(restic, FilesystemStub(empty=True, dump_exists=False), database).execute(
+        data_dir, dump_path
+    )
+
+    assert restic.calls == [("has_snapshots", None), ("restore", data_dir, None)]
+    assert database.calls == []
 
 
 def test_restore_skips_when_data_and_database_are_not_empty(tmp_path: Path) -> None:
