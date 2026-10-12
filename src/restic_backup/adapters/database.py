@@ -72,7 +72,15 @@ class MysqlCliAdapter:
             "SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END "
             "FROM information_schema.tables WHERE table_schema = DATABASE();"
         )
-        args = ["mysql", *self._connection_args(), "--batch", "--skip-column-names", "--execute", query]
+        args = [
+            "mysql",
+            *self._connection_args(),
+            "--batch",
+            "--skip-column-names",
+            "--execute",
+            query,
+            self._required_database(),
+        ]
         return _query_bool(args, self._runner, self._env())
 
     def restore(self, source: Path) -> None:
